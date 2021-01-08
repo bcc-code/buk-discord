@@ -1,7 +1,6 @@
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import bodyParser from 'body-parser';
-import cors from 'cors';
 import config from '../config';
 import apiFunctions from './functions';
 import path from 'path';
@@ -13,8 +12,6 @@ interface PostFunction {
 
 export default async function (): Promise<void> {
     const app = express();
-
-    app.use(cors());
 
     app.use(bodyParser.json());
 
