@@ -2,6 +2,7 @@ import { VoiceChannel, VoiceState, GuildMember } from 'discord.js';
 import config from '../config';
 import fs from 'fs';
 import { channels, guilds, client } from '..';
+import channelNames from '../config/channelNames';
 import TemporaryChannel from '../classes/temporaryChannel';
 
 const rootFolder = './data/voice_activity';
@@ -21,31 +22,8 @@ async function deleteOverwrite(
 }
 
 function randomString() {
-    const number = Math.floor(Math.random() * 10);
-    switch(number) {
-        case 0:
-            return "Lorem Ipsum";
-        case 1:
-            return "Arcadium";
-        case 2:
-            return "Board Games";
-        case 3:
-            return "Gunk Seed Gatherers";
-        case 4:
-            return "Legends";
-        case 5:
-            return "Progressive Minds";
-        case 6:
-            return "Players of Games";
-        case 7:
-            return "Doing Homework";
-        case 8:
-            return "Habbo";
-        case 9:
-            return "Just Chilling";
-        case 10:
-            return "Polyrythms"
-    }
+    const number = Math.floor(Math.random() * channelNames.length);
+    return channelNames[number];
 }
 
 function groupEnd(name: string) {
