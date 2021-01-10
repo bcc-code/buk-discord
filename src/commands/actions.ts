@@ -145,7 +145,7 @@ class ActionsCommands extends CommandObject {
                 if (subMember) {
                     subMembers.push(`<@${member.id}> (<@${subMember.discordId}>)`);
                 } else {
-                    unverifiedMembers.push(`<@${member.id}>`);
+                    if (unverifiedMembers.length < 60) unverifiedMembers.push(`<@${member.id}>`);
                 }
             }
         });
@@ -159,16 +159,21 @@ class ActionsCommands extends CommandObject {
         const players = await sanity.GetValidMembers();
 
         const unverifiedMembers = [];
+        const subMembers = [];
         message.guild.members.cache.forEach((member) => {
             if (member.user.bot) return;
             const player = players.find((p) => p.discordId === member.id);
             if (!player) {
-                if (member.roles.cache.find((r) => r.name === 'Member')) {
-                    unverifiedMembers.push(`<@${member.id}>`);
+                
+                const subMember = players.find((p) => p.moreDiscordUsers?.find(d => d.discordId == member.id) != undefined);
+                if (subMember) {
+                    subMembers.push(`<@${member.id}> (<@${subMember.discordId}>)`);
+                } else if (member.roles.cache.array().length > 1) {
+                    if (unverifiedMembers.length < 60) unverifiedMembers.push(`<@${member.id}>`);
                 }
             }
         });
-        message.channel.send(unverifiedMembers.join('\n'));
+        message.channel.send("**INVALID MEMBERS**\n" + unverifiedMembers.join('\n'));
         return true;
     };
 
