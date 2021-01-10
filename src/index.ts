@@ -1,3 +1,6 @@
+
+import env from 'dotenv';
+env.config();
 import Discord, { TextChannel } from 'discord.js';
 import config from './config';
 import * as events from './events';
@@ -5,34 +8,13 @@ import TemporaryChannel from './classes/temporaryChannel';
 import Guild from './classes/guild';
 import DirectMessage from './classes/directMessage';
 
+
 if (process.argv[2] === 'debug') {
     config.debug = true;
     console.log('RUNNING IN DEBUG MODE');
 }
 
 export const client = new Discord.Client();
-
-// export const connection = mysql.createConnection({
-//     host: config.database.address,
-//     user: config.database.user,
-//     password: config.database.password,
-//     database: config.database.name,
-//     port: 3306,
-// });
-
-// CONFIGURATION AND DATABASE SETUP
-// export const data: {
-//     [key: string]: Keyv;
-// } = Object();
-// ['tempTextChannels', 'guilds'].forEach((key: string) => {
-//     data[
-//         key
-//     ] = new Keyv(
-//         `mysql://${config.database.user}:${config.database.password}@${config.database.address}/${config.database.name}`,
-//         { namespace: key }
-//     );
-//     data[key].on('error', (err: any) => console.log('CONNECTION ERROR', err));
-// });
 
 export const guilds: {
     [id: string]: Guild;

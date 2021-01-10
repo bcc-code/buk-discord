@@ -4,3 +4,4 @@ dist/
 tmp/
 data/
 package-lock.json
+.env
