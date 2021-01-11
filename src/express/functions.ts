@@ -96,7 +96,7 @@ class ApiFunctions {
             client.guilds.cache.first();
         const member = guild?.members.cache.get(userId) ? await guild.members.fetch(userId) : null;
         if (member) {
-            setTimeout(() => {if (!member.roles.cache.find(r => r.name === "Member")) sanity.VerifyUser(member)}, 10000);
+            if (!member.roles.cache.find(r => r.name === "Member")) await sanity.VerifyUser(member);
             return {
                 status: true,
                 response: new DiscordMember(member).json,

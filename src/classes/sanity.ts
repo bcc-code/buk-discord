@@ -28,8 +28,8 @@ class Sanity extends SanityClient {
         if (!guild) return console.log('GUILD NOT FOUND');
 
         if (!guilds[guild.id].config.verifyMembers) {
-return console.log('VERIFICATION DISABLED');
-}
+            return console.log('VERIFICATION DISABLED');
+        }
 
         if (result.length > 0) {
             for (const player of result) {
