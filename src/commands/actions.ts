@@ -153,6 +153,32 @@ class ActionsCommands extends CommandObject {
         return true;
     };
 
+    missingmembers = async (message: Message) => {
+        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
+            return false;
+
+        const players = await sanity.GetValidMembers();
+
+        const missingRoles = [];
+
+        for (const player of players) {
+            const member = message.guild.members.cache.get(player.discordId);
+
+            if (member) {
+                if (!member.roles.cache.find(r => r.name === "Member")) {
+                    await sanity.VerifyUser(member);
+                    await new Promise(resolve => {
+                        setTimeout(resolve, 500);
+                    });
+                }
+            }
+        }
+
+        await message.channel.send("**ASSIGNED MEMBERS**\n<@" + missingRoles.join(">\n<@") + ">");
+
+        return true;
+    }
+
     invalidmembers = async (message: Message) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
