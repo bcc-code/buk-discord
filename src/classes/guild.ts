@@ -55,7 +55,7 @@ class Guild {
         this.id = guild.id;
         this.guild = guild;
         this.name = guild.name;
-        if (existsSync(`./data/guilds/${this.id}.json`)) {
+        if (existsSync(`./data/guilds/${this.id}`)) {
             const result = JSON.parse(readFileSync(`./data/guilds/${this.id}`, { encoding: 'UTF8'})) as Config;
             if (result) {
                 this.config = result;
