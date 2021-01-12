@@ -128,3 +128,8 @@ interface Church {
     church: string;
     nation: string;
 }
+
+interface MemberResult {
+    id: string;
+    tag: string;
+}

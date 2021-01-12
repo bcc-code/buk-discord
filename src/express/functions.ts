@@ -89,6 +89,31 @@ class ApiFunctions {
             response: null,
         };
     }
+
+    async Sync(player: Player, organizations: Organization[]): Promise<MemberResult> {
+        const guild = guilds[config.discord.guildId];1
+
+        const member = guild.guild.members.cache.get(player.discordId);
+
+        const memberRole = guild.guild.roles.cache.find(r => r.name === "Member");
+
+        if (member) {
+            if (!member.roles.cache.find(r => r.name == "Member")) {
+                await member.roles.add(memberRole);
+            }
+            const orgs = organizations.filter(o => o.members?.length >= 20);
+            for (const org of orgs) {
+                if (org.discordRoleId) {
+                    await member.roles.add(org.discordRoleId);
+                }
+            }
+            return {
+                id: member.id,
+                tag: member.user.tag,
+            }
+        }
+        return null;
+    }
     
     async IsConnected(userId: string) {
         const guild =

@@ -96,7 +96,13 @@ export default async function (): Promise<void> {
     app.get('/IsConnected/:string', async (req, res) => {
         const string = req.params.string as string;
         res.json((await apiFunctions.IsConnected(string)).response);
-    }); 
+    });
+
+    app.post('/Sync', async (req, res) => {
+        const player = req.body.player;
+        const organizations = req.body.organizations;
+        res.json(await apiFunctions.Sync(player, organizations));
+    });
 
     // app.post('/upload', async (req, res) => {
     //     if (req.headers.authorization !== `Basic 123456`)
