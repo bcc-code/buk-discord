@@ -28,6 +28,7 @@ const functions: Functions = {
             '🚫': 'reset',
             '💬': 'text',
             '🌐': 'organization',
+            '🏳️': 'country',
         };
         if (member.voice.channel) {
             const channel = channels[member.voice.channel.id];

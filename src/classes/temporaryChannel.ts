@@ -197,7 +197,58 @@ class TemporaryChannel {
             writeFileSync(`./data/tempTextChannels/${this.channel.id}`, textChannel.id);
         }
     }
+    async country(member: GuildMember): Promise<void> {
+        const nationRoles: Role[] = [];
 
+        const roles = guilds[member.guild.id].roles.filter(r => r.type === 'nation' && member.roles.cache.get(r.id) !== undefined);
+
+        for (const role of roles) {
+            nationRoles.push(role.role);
+        }
+
+        if (nationRoles.length == 0) {
+            await member.send("You don't have any country roles?");
+            return;
+        }
+
+        const channel = this.channel;
+
+        for (const [, overwrite] of channel.permissionOverwrites) {
+            if (whitelist.includes(overwrite.id)) {
+                nationRoles.push(member.guild.roles.cache.get(overwrite.id));
+            }
+        }
+
+        if (channel.permissionsFor(member)?.has('MANAGE_CHANNELS')) {
+            const overwrites: OverwriteResolvable[] = [];
+
+            overwrites.push({
+                id: channel.guild.roles.everyone.id,
+                deny: ["CONNECT"]
+            });
+
+            channel.members.forEach((memb) => {
+                if (channel.permissionsFor(memb).has('MANAGE_CHANNELS')) {
+                    overwrites.push({
+                        id: memb.id,
+                        allow: ["VIEW_CHANNEL", "CONNECT", "MOVE_MEMBERS", "MANAGE_CHANNELS"]
+                    })
+                }
+            });
+            nationRoles.forEach((role) => {
+                overwrites.push({
+                    id: role.id,
+                    allow: ["CONNECT", "VIEW_CHANNEL"]
+                })
+            })
+
+            await channel.overwritePermissions(overwrites);
+
+            await member.send(
+                'Only members of your country can join your channel.'
+            );
+        }
+    }
     async organization(member: GuildMember): Promise<void> {
 
         const organizationRoles: Role[] = [];

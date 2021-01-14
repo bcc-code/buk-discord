@@ -10,7 +10,7 @@ class VoiceCommands extends CommandObject {
         args = args?.splice(1);
         const createdChannel = channels[message.member.voice.channel.id];
 
-        const cmds = ['lock', 'close', 'hide', 'reset', 'text', 'organization', 'mute'];
+        const cmds = ['lock', 'close', 'hide', 'reset', 'text', 'organization', 'mute', 'country'];
         if (!cmds.includes(cmd)) {
             const msg = await message.channel.send(
                 `Available subcommands: ${cmds.join(', ')}`
