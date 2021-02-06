@@ -28,8 +28,7 @@ function randomString() {
 
 function groupEnd(name: string) {
     const number = Math.floor(Math.random() * 20);
-    console.log(number)
-    switch(number){
+    switch(number) {
         case 0:
             return `${name}'s hive`;
         case 1:
@@ -42,6 +41,12 @@ function groupEnd(name: string) {
             return `The ${name}`;
         case 5:
             return randomString();
+        case 6:
+            return `${name}'s party`;
+        case 7:
+            return `Tea time with ${name}`;
+        case 8:
+            return `Count ${name}'s Castle`;
         default:
             return `${name}'s channel`;
     }

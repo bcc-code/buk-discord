@@ -2,6 +2,19 @@ import { Message } from 'discord.js';
 import config from '../config';
 import { channels } from '..';
 import CommandObject from '../classes/command';
+import { existsSync, readFileSync } from 'fs';
+
+function secondsToHms(d) {
+    d = Number(d);
+    const h = Math.floor(d / 3600);
+    const m = Math.floor(d % 3600 / 60);
+    const s = Math.floor(d % 3600 % 60);
+
+    const hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+    const mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+    const sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+    return hDisplay + mDisplay + sDisplay; 
+}
 
 class VoiceCommands extends CommandObject {
     // functions: string[] = ['voice', 'add', 'channel'];
@@ -38,6 +51,23 @@ class VoiceCommands extends CommandObject {
     };
 
     channel = this.voice;
+
+    activity = async (message: Message, args: string[]) => {
+        const member = message.mentions.members.first();
+
+        if(!member) {
+            return false;
+        }
+
+        const path = './data/voice_activity/' + member.id;
+        const activity = existsSync(path) ? parseInt(readFileSync(path, {encoding: 'utf8'})) : undefined;
+
+        if (activity) {
+            await message.channel.send(`<@${member.id}> has been active for ${secondsToHms(activity/1000)}`);
+        }
+
+        return true;
+    }
 
     add = async (message: Message, args: string[]) => {
         const chan = message.member.voice.channel;
