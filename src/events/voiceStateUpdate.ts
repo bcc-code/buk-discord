@@ -72,7 +72,7 @@ function setTime(id: string, time: number) {
 
 function updateTimeForUser(member: GuildMember) {
     const now = Date.now();
-    if (member.voice.channel) {
+    if (member.voice.channel && member.voice.channel?.name !== 'AFK') {
         let stats = voiceStats[member.id];
         if (stats) {
             stats.total = stats.total + (now - stats.started);
