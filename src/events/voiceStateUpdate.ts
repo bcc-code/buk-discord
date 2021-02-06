@@ -93,6 +93,7 @@ function updateTimeForUser(member: GuildMember) {
             voiceStats[member.id] = stats;
             setTime(member.id, stats.total);
         }
+        delete voiceStats[member.id];
     }
 }
 

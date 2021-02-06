@@ -4,8 +4,8 @@ import { channels } from '..';
 import CommandObject from '../classes/command';
 import { existsSync, readFileSync } from 'fs';
 
-function secondsToHms(d) {
-    d = Number(d);
+function secondsToHms(d: number) {
+    console.log(d);
     const h = Math.floor(d / 3600);
     const m = Math.floor(d % 3600 / 60);
     const s = Math.floor(d % 3600 % 60);
@@ -53,7 +53,7 @@ class VoiceCommands extends CommandObject {
     channel = this.voice;
 
     activity = async (message: Message, args: string[]) => {
-        const member = message.mentions.members.first();
+        const member = message.mentions.members.first   ();
 
         if(!member) {
             return false;
@@ -63,7 +63,7 @@ class VoiceCommands extends CommandObject {
         const activity = existsSync(path) ? parseInt(readFileSync(path, {encoding: 'utf8'})) : undefined;
 
         if (activity) {
-            await message.channel.send(`<@${member.id}> has been active for ${secondsToHms(activity/1000)}`);
+            await message.channel.send(`<@${member.id}> has been active for ${secondsToHms(Math.floor(activity/1000))}`);
         }
 
         return true;
