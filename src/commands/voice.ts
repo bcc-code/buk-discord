@@ -2,19 +2,17 @@ import { Message, MessageEmbed } from 'discord.js';
 import config from '../config';
 import { channels } from '..';
 import CommandObject from '../classes/command';
-import { existsSync, fstat, readdirSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync } from 'fs';
 
 function secondsToHms(d: number) {
     const days = Math.floor(d / 3600 / 24);
-    const h = Math.floor(d % 3600 % 24);
-    const m = Math.floor(d % 3600 % 24 / 60);
-    const s = Math.floor(d % 3600 % 24 % 60);
+    const h = Math.floor(d / 3600 % 24);
+    const m = Math.floor(d % 3600 / 60);
 
     const dDisplay = days > 0 ? days + (days == 1 ? " day, " : " days, ") : "";
     const hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
     const mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
-    const sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-    return dDisplay + hDisplay + mDisplay + sDisplay; 
+    return dDisplay + hDisplay + mDisplay; 
 }
 
 class VoiceCommands extends CommandObject {
