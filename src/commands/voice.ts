@@ -1,8 +1,8 @@
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import config from '../config';
 import { channels } from '..';
 import CommandObject from '../classes/command';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, fstat, readdirSync, readFileSync } from 'fs';
 
 function secondsToHms(d: number) {
     console.log(d);
@@ -51,6 +51,36 @@ class VoiceCommands extends CommandObject {
     };
 
     channel = this.voice;
+
+    top = async (message: Message, args: string[]) => {
+        
+        const members: {
+            id: string;
+            time: number;
+        }[] = [];
+        readdirSync('./data/voice_activity').forEach(d => {
+            const m = {
+                id: d,
+                time: parseInt(readFileSync('./data/voice_activity/' + d, {encoding: 'utf8'})),
+            };
+            members.push(m);
+        });
+
+        const embed = new MessageEmbed()
+            .setTitle(`LEADERBOARD ACTIVITY`)
+            .setDescription(`Top 10`);
+        
+        const top = members.sort((a, b) => b.time - a.time).slice(0, 10);
+
+        for (const m of top) {
+            //embed.addField(`<@${m.id}>`, `${secondsToHms(Math.floor(m.time/1000)) ?? `UNKNOWN`}`, true);
+            embed.addField(`#${top.indexOf(m) + 1}`, `<@${m.id}>\n_${secondsToHms(Math.floor(m.time/1000))}_`, true);
+        }
+
+        await message.channel.send(embed);
+
+        return true;
+    }
 
     activity = async (message: Message, args: string[]) => {
         const member = message.mentions.members.first   ();
