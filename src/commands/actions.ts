@@ -259,7 +259,7 @@ class ActionsCommands extends CommandObject {
         return true;
     }
 
-    userswithgirlsrole = async (message: Message) => {
+    userswithgirlrole = async (message: Message) => {
         if (!message.member.roles.cache.some(r => ['Moderator', 'Chat Moderator'].includes(r.name))) {
             return false;
         }
@@ -271,7 +271,7 @@ class ActionsCommands extends CommandObject {
         for (const [,m] of members) {
             msg += `<@${m.id}> | ${(await sanity.GetMember(m.id))?.name}\n`;
         }
-
+        
         await message.channel.send(msg);
 
         return true;
