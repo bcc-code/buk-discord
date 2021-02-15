@@ -12,6 +12,8 @@ class Sanity extends SanityClient {
         stdTTL: 60,
     });
 
+    private allMembers: Player[] = [];
+
     async VerifyUser(member: GuildMember) {
         const date = new Date();
 
@@ -249,6 +251,23 @@ class Sanity extends SanityClient {
                 },
             ])
             .commit();
+    }
+
+    async GetMember(id: string) {
+        let member = this.allMembers.find(p => p.discordId == id);
+        const date = new Date();
+
+        date.setMonth(date.getMonth() - 7);
+        if (!member) {
+            if (this.allMembers.length == 0) {
+                this.allMembers = await this.GetValidMembers();
+                member = this.allMembers.find(p => p.discordId == id);
+            } else {
+                member = (await this.fetch(`*[_type == 'player' && dateLastActive > '${date.toISOString()}' && discordId == '${id}']`) as Player[])[0];
+                this.allMembers.push(member);
+            }
+        }
+        return member;
     }
 
     GetValidMembers() {

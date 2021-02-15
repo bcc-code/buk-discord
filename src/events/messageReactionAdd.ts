@@ -1,9 +1,10 @@
-import { User, MessageReaction } from 'discord.js';
+import { User, MessageReaction, TextChannel } from 'discord.js';
 import config from '../config';
 import sanity from '../classes/sanity';
 import { channels, guilds } from '..';
 import TemporaryChannel from '../classes/temporaryChannel';
 import { Help } from '../methods/text';
+import { message } from '.';
 
 interface Functions {
     [key: string]: (reaction: MessageReaction, user: User) => Promise<void>;
@@ -69,6 +70,12 @@ const functions: Functions = {
         } else {
             await member.roles.add(role);
             await member.send(`Role: **${role.name}** was assigned to you.\n*You should now have access to the dedicated ${role.name} channels.*`);
+            if (reaction.emoji.name == '👧') {
+                const channel = guild.channels.cache.get('810867038015717426') as TextChannel;
+                if (channel.type == 'text') {
+                    await channel.send(`User: <@${member.id}> got the Girl role. PMO name: ${(await sanity.GetMember(member.id)).name}`)
+                }
+            }
         }
     },
     async games(reaction, user) {

@@ -1,7 +1,7 @@
 import { Message } from 'discord.js';
 import sanity from '../classes/sanity';
 import CommandObject from '../classes/command';
-import { writeFileSync } from 'fs';
+import { writeFile, writeFileSync } from 'fs';
 import { guilds } from '..';
 
 class ActionsCommands extends CommandObject {
@@ -128,6 +128,27 @@ class ActionsCommands extends CommandObject {
         return false;
     }
 
+    fixroles = async(message: Message) => {
+        if (!message.member.roles.cache.find(r => r.name == 'Administrator')) 
+        return false;
+
+
+        const players = await sanity.GetValidMembers();
+
+        const memberrole = message.guild.roles.cache.find(r => r.name == "Member");
+
+        for (const [s,member] of message.guild.members.cache) {
+            const player = players.find(p => p.discordId == member.id);
+            console.log(player?.name);
+            if (!member.roles.cache.get(memberrole.id) && player) {
+                await member.roles.add(memberrole);
+                await new Promise(resolve => {
+                    setTimeout(resolve, 500);
+                });
+            }
+        }
+    }
+
     unverified = async (message: Message) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
@@ -149,6 +170,7 @@ class ActionsCommands extends CommandObject {
                 }
             }
         });
+        writeFile('./unverified.json', JSON.stringify(unverifiedMembers), () => null);
         await message.channel.send(`**UNVERIFIED MEMBERS**\n${unverifiedMembers.join('\n')}\n\n**SUB ACCOUNTS**\n${subMembers.join('\n')}`);
         return true;
     };
@@ -234,6 +256,24 @@ class ActionsCommands extends CommandObject {
             return false;
         
         await guilds[message.guild.id]?.refreshConfig();
+        return true;
+    }
+
+    userswithgirlsrole = async (message: Message) => {
+        if (!message.member.roles.cache.some(r => ['Moderator', 'Chat Moderator'].includes(r.name))) {
+            return false;
+        }
+
+        const members = message.guild.members.cache.filter(m => m.roles.cache.some(r => r.name == 'Girl'));
+
+        let msg = '**MEMBERS WITH GIRL ROLE**\n';
+
+        for (const [,m] of members) {
+            msg += `<@${m.id}> | ${(await sanity.GetMember(m.id))?.name}\n`;
+        }
+
+        await message.channel.send(msg);
+
         return true;
     }
 
