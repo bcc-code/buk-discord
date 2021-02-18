@@ -272,7 +272,13 @@ class ActionsCommands extends CommandObject {
             msg += `<@${m.id}> | ${(await sanity.GetMember(m.id))?.name}\n`;
         }
         
-        await message.channel.send(msg);
+        if (msg.length < 2000) {
+            await message.channel.send(msg);
+        } else {
+            const msgs = msg.split("\n");
+            await message.channel.send(msgs.slice(0, msgs.length/2).join("\n"));
+            await message.channel.send(msgs.slice(msgs.length/2, msgs.length).join("\n"));
+        }
 
         return true;
     }
