@@ -149,10 +149,11 @@ class ActionsCommands extends CommandObject {
         }
     }
 
-    unverified = async (message: Message) => {
+    unverified = async (message: Message, args: string[]) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
 
+        
         const players = await sanity.GetValidMembers();
 
         const unverifiedMembers = [];
@@ -170,8 +171,7 @@ class ActionsCommands extends CommandObject {
                 }
             }
         });
-        writeFile('./unverified.json', JSON.stringify(unverifiedMembers), () => null);
-        await message.channel.send(`**UNVERIFIED MEMBERS**\n${unverifiedMembers.join('\n')}\n\n**SUB ACCOUNTS**\n${subMembers.join('\n')}`);
+        await message.channel.send(`**UNVERIFIED MEMBERS**\n${unverifiedMembers.slice(parseInt(args[0]) ?? 0, 50).join('\n')}\n\n**SUB ACCOUNTS**\n${subMembers.join('\n')}`);
         return true;
     };
 
