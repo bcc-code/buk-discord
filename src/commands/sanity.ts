@@ -32,9 +32,11 @@ class SanityCommands extends CommandObject {
             for (const memberId of org.members) {
                 //console.log("MEMBER", memberId)
                 const member = guild.members.cache.get(memberId);
-                if (member?.roles.cache.get(role.id)) continue;
-                await member?.roles.add(role);
-                await new Promise(resolve => setTimeout(resolve, 200))
+                if (member) {
+                    if (member?.roles.cache.get(role.id)) continue;
+                    await member?.roles.add(role);
+                    await new Promise(resolve => setTimeout(resolve, 200))
+                }
             }
         }
         console.log("done")
@@ -54,7 +56,7 @@ class SanityCommands extends CommandObject {
             const role = guild.roles.cache.get(team.role);
             if (!role) continue;
             const captain = guild.members.cache.get(team.captain);
-            if (!captain?.roles.cache.get(role.id)) {
+            if (!captain?.roles.cache.get(role.id) && captain) {
                 await captain?.roles.add(role);
                 await new Promise(resolve => setTimeout(resolve, 400));
             }
@@ -68,8 +70,9 @@ class SanityCommands extends CommandObject {
                     await member?.roles.add(role);
                     if (!member) {
                         console.log('NOT CONNECTED TO DISCORD ' + player);
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     }
-                    await new Promise(resolve => setTimeout(resolve, 1000));
                 }
             }
         }
