@@ -183,8 +183,9 @@ class Guild {
         )) {
             return false;
         }
+        
         if (this.config.filter.channels.includes(message.channel.id)) {
-            const content = message.content.split(" ").filter(arg => arg.search(/[\d\D]\.[\d\D]/) >= 0);
+            const content = message.content.split(" ").filter(arg => arg.search(/\w.\.\w./) >= 0);
             for (const arg of content) {
                 if (!this.config.filter.whitelist.includes(arg)) {
                     return true;
