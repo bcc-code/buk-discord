@@ -81,11 +81,11 @@ class Guild {
                 this.roles.push(new DiscordRole("nation", this.guild.roles.cache.get(role.roleId)));
             });
 
-            config.organizationRoles.forEach(role => {
+            config.organizationRoles?.forEach(role => {
                 this.roles.push(new DiscordRole("organization", this.guild.roles.cache.get(role)));
             });
 
-            config.communityRoles.forEach(role => {
+            config.communityRoles?.forEach(role => {
                 this.roles.push(new DiscordRole("community", this.guild.roles.cache.get(role.roleId), role.emojiName));
             })
 
@@ -96,9 +96,9 @@ class Guild {
             //     organizations: config?.organizationRoles,
             // };
             
-            this.churches = config.churches;
+            this.churches = config.churches ?? [];
 
-            config.channels.forEach(channel => {
+            config.channels?.forEach(channel => {
                 this.channels[channel.name] = this.guild?.channels?.cache.get(channel.id);
             });
         } else {
