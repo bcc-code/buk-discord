@@ -17,6 +17,14 @@ class Sanity extends SanityClient {
     async VerifyUser(member: GuildMember) {
         const date = new Date();
 
+        // discord specific stuff
+        const guild = member.guild;
+        if (!guild) return console.log('GUILD NOT FOUND');
+
+        if (!guilds[guild.id]?.config.verifyMembers) {
+            return console.log('VERIFICATION DISABLED');
+        }
+
         date.setDate(date.getDate() - 1);
         // define query and parametres
         const query = `*[_type == "player" && discordId match $userid && dateLastActive > '${date.toISOString()}']`;
@@ -25,13 +33,6 @@ class Sanity extends SanityClient {
         // fetch data from Sanity
         const result = (await this.fetch(query, params)) as Player[];
 
-        // discord specific stuff
-        const guild = member.guild;
-        if (!guild) return console.log('GUILD NOT FOUND');
-
-        if (!guilds[guild.id].config.verifyMembers) {
-            return console.log('VERIFICATION DISABLED');
-        }
 
         if (result.length > 0) {
             for (const player of result) {
@@ -254,17 +255,21 @@ class Sanity extends SanityClient {
     }
 
     async GetMember(id: string) {
-        let member = this.allMembers.find(p => p.discordId == id);
+        let member = this.allMembers.find(p => p?.discordId == id);
         const date = new Date();
 
         date.setMonth(date.getMonth() - 7);
         if (!member) {
             if (this.allMembers.length == 0) {
-                this.allMembers = await this.GetValidMembers();
-                member = this.allMembers.find(p => p.discordId == id);
+                try {
+                    this.allMembers = await this.GetValidMembers();
+                    member = this.allMembers.find(p => p?.discordId == id);
+                } catch {
+                    console.log
+                }
             } else {
                 member = (await this.fetch(`*[_type == 'player' && dateLastActive > '${date.toISOString()}' && discordId == '${id}']`) as Player[])[0];
-                this.allMembers.push(member);
+                if (member) this.allMembers.push(member);
             }
         }
         return member;
