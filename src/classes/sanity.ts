@@ -37,8 +37,9 @@ class Sanity extends SanityClient {
         if (result.length > 0) {
             for (const player of result) {
                 if (player?.discordId === member.user.id) {
-                    // roles
-                    const memberRole = guild.roles.cache.find(
+                    const memberRole = member.guild.id === '551350238821220382' 
+                        ? await guild.roles.fetch('799971388403613736') 
+                        : guild.roles.cache.find(
                         (r) => r.name === 'Member',
                     );
                     if (memberRole) {
@@ -53,7 +54,7 @@ class Sanity extends SanityClient {
                         const church = guilds[guild.id].churches.find(
                             (c) => c.church === player.location.trim(),
                         );
-                        const role = guilds[guild.id]?.roles.find((r) => r.name === church.nation && r.type === 'nation')?.role;
+                        const role = church ? guilds[guild.id]?.roles.find((r) => r.name === church.nation && r.type === 'nation')?.role : undefined;
 
                         if (role) {
                             await member.roles.add(role);
@@ -86,13 +87,19 @@ class Sanity extends SanityClient {
                             console.log(`UPDATE FAILED ${err.message}`);
                         });
 
+                    if (guild.id == "551350238821220382") {
+                        const welcomeEmbed = new MessageEmbed()
+                            .setTitle('Welcome to the BUK Gaming Discord!')
+                            .setDescription(`Go to <#${config.discord.messages?.find((m) => m.key == 'information')?.parentId}> to get specific gameroles and read information about the Discord server.`)
+                            .addField('BUK', 'This is an Offical BUK server, we expect our members to respect the official guidelines from BUK Central.');
+                        await member.send(welcomeEmbed).catch((err) => console.log(err));
+                        console.log('SENT WELCOME EMBED');
+                    }
+                    if (guild.id == "873855207849734175") {
+                        const channel = guild.channels.cache.find(i => i.type == "text" && i.id == "873917432660656138") as TextChannel | undefined;
 
-                    const welcomeEmbed = new MessageEmbed()
-                        .setTitle('Welcome to the BUK Gaming Discord!')
-                        .setDescription(`Go to <#${config.discord.messages?.find((m) => m.key == 'information')?.parentId}> to get specific gameroles and read information about the Discord server.`)
-                        .addField('BUK', 'This is an Offical BUK server, we expect our members to respect the official guidelines from BUK Central.');
-                    await member.send(welcomeEmbed).catch((err) => console.log(err));
-                    console.log('SENT WELCOME EMBED');
+                        await channel?.send(`Member <@${member.id}> joined. PMO name: ${player.name}`);
+                    }
                     return true;
                 } else {
                     console.log(`ID: ${member.id} NOT FOUND IN DATABASE`);
