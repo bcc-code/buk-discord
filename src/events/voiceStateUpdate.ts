@@ -62,16 +62,27 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
             channels[oldChannel.id]?.textChannel?.permissionOverwrites
                 .delete(member.id);
 
+        let hasMembers = false;
+        for (const member of oldChannel.members) {
+            hasMembers = true;
+            break;
+        }
+
         if (
             oldChannel.parent.name !== 'Permanent' &&
-            !oldChannel.members.hasAny() &&
+            !hasMembers &&
             !cc &&
             !lc
         ) {
             setTimeout(() => {
+                hasMembers = false;
+                for (const member of oldChannel.members) {
+                    hasMembers = true;
+                    break;
+                }
                 if (
                     oldChannel.guild.channels.cache.get(oldChannel.id)
-                        ? !oldChannel.members.hasAny()
+                        ? !hasMembers
                         : false
                 ) {
                     oldChannel
