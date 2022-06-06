@@ -52,6 +52,8 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
     const newChannel = newState.channel;
     if (!guilds[member.guild.id]?.config.voice) return;
 
+    if (oldChannel.id === newChannel.id) return;
+
     if (oldChannel) {
         const perms = oldChannel.parent.permissionsFor(client.user);
         if (!perms.has('MANAGE_CHANNELS')) return;
