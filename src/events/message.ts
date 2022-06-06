@@ -27,17 +27,21 @@ export default async (message: Message): Promise<void> => {
 
         directMessages.push(new DirectMessage(message));
 
-        channel?.send(embed);
+        channel?.send({
+            embeds: [embed]
+        });
         return;
     }
 
-    message.channel = message.channel as TextChannel;
+    if (!(message.channel instanceof TextChannel)) {
+        return;
+    }
 
     if (
         message.channel.name === 'commands' &&
         !message.content.startsWith(config.discord.prefix)
     ) {
-        message.delete({ timeout: 1000 });
+        setTimeout(message.delete, 1000);
         return;
     }
 
@@ -45,8 +49,8 @@ export default async (message: Message): Promise<void> => {
         if (guilds[message.guild.id].filterCheck(message)) {
             message.channel
                 .send('Unaccepted link')
-                .then((msg) => msg.delete({ timeout: 5000 }));
-            message.delete({ timeout: 1000 });
+                .then((msg) => setTimeout(msg.delete, 5000));
+            setTimeout(message.delete, 1000);
             (message.channel.guild.channels.cache.find(
                 (c) => c.name === 'admin'
             ) as TextChannel).send(
@@ -67,5 +71,5 @@ export default async (message: Message): Promise<void> => {
 
     await commands[command]?.(message, args); // || message.channel.send("Unknown command").then(msg => msg.delete({ timeout: 5000 }));
 
-    if (!['dm', 'say'].includes(command)) message.delete({ timeout: 5000 });
+    if (!['dm', 'say'].includes(command)) setTimeout(message.delete, 5000);
 };

@@ -1,7 +1,7 @@
 
 import env from 'dotenv';
 env.config();
-import Discord, { TextChannel } from 'discord.js';
+import Discord, { Intents, TextChannel } from 'discord.js';
 import config from './config';
 import * as events from './events';
 import TemporaryChannel from './classes/temporaryChannel';
@@ -14,7 +14,13 @@ if (process.argv[2] === 'debug') {
     console.log('RUNNING IN DEBUG MODE');
 }
 
-export const client = new Discord.Client();
+export const client = new Discord.Client({
+    intents: [
+        Intents.FLAGS.GUILDS,
+        Intents.FLAGS.GUILD_MEMBERS,
+        Intents.FLAGS.GUILD_VOICE_STATES,
+    ]
+});
 
 export const guilds: {
     [id: string]: Guild;

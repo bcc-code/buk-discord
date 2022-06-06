@@ -1,7 +1,6 @@
-import { Message } from 'discord.js';
+import { Message, TextBasedChannel } from 'discord.js';
 import sanity from '../classes/sanity';
 import CommandObject from '../classes/command';
-import { writeFile, writeFileSync } from 'fs';
 import { guilds } from '..';
 
 class ActionsCommands extends CommandObject {
@@ -11,7 +10,7 @@ class ActionsCommands extends CommandObject {
     react = async (message: Message, args: string[]) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
-        const channel = message.mentions.channels.first();
+        const channel = message.mentions.channels.first() as TextBasedChannel;
         const msg = await channel?.messages.fetch(args[1]);
         const emoji = args[2];
         msg?.react(emoji);
@@ -46,13 +45,14 @@ class ActionsCommands extends CommandObject {
         )
             return false;
 
-        const channel = message.mentions.channels.first();
+        const channel = message.mentions.channels.first() as TextBasedChannel;
 
         args.splice(0, 1);
 
         const sayMessage = args.join(' ');
         if (message.attachments.first()) {
-            channel.send(sayMessage, {
+            channel.send({
+                content: sayMessage,
                 files: [message.attachments.first().url],
             });
         } else {
@@ -65,7 +65,7 @@ class ActionsCommands extends CommandObject {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
         if (args[0] && !isNaN(Number(args[1])) && args[1].length === 18) {
-            const channel = message.mentions.channels.first();
+            const channel = message.mentions.channels.first() as TextBasedChannel;
             if (channel) {
                 const msg = await channel.messages.fetch(args[1]);
                 if (msg) {
@@ -82,7 +82,7 @@ class ActionsCommands extends CommandObject {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
         if (args[0] && !isNaN(Number(args[1])) && args[1].length === 18) {
-            const channel = message.mentions.channels.first();
+            const channel = message.mentions.channels.first() as TextBasedChannel;
             const msg = await channel?.messages.fetch(args[1]);
             const content =
                 msg?.content
@@ -100,7 +100,7 @@ class ActionsCommands extends CommandObject {
     edit = async (message: Message, args: string[]) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
-        const channel = message.mentions.channels.first();
+        const channel = message.mentions.channels.first() as TextBasedChannel;
         args.shift();
         if (!args[0] || args[0].length !== 18) {
             message.channel.send('Usage: !edit #channel msgId [new message]');
@@ -114,143 +114,6 @@ class ActionsCommands extends CommandObject {
         return true;
     };
 
-    orgrole = async (message: Message, args: string[]) => {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator')){
-            return false;
-        }
-        
-        const role = message.mentions.roles.first();
-        const orgId = args[1];
-        if (role && orgId) {
-            writeFileSync(`./data/organizations/${orgId}`, role.id);
-            return true;
-        }
-        return false;
-    }
-
-    fixroles = async(message: Message) => {
-        if (!message.member.roles.cache.find(r => r.name == 'Administrator')) 
-        return false;
-
-
-        const players = await sanity.GetValidMembers();
-
-        const memberrole = message.guild.roles.cache.find(r => r.name == "Member");
-
-        for (const [s,member] of message.guild.members.cache) {
-            const player = players.find(p => p.discordId == member.id);
-            console.log(player?.name);
-            if (!member.roles.cache.get(memberrole.id) && player) {
-                await member.roles.add(memberrole);
-                await new Promise(resolve => {
-                    setTimeout(resolve, 500);
-                });
-            }
-        }
-    }
-
-    unverified = async (message: Message, args: string[]) => {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
-            return false;
-
-        
-        const players = await sanity.GetValidMembers();
-
-        const unverifiedMembers = [];
-
-        const subMembers = []
-
-        message.guild.members.cache.forEach((member) => {
-            const player = players.find((p) => p.discordId === member.id);
-            if (!player) {
-                const subMember = players.find((p) => p.moreDiscordUsers?.find(d => d.discordId == member.id) != undefined);
-                if (subMember) {
-                    subMembers.push(`<@${member.id}> (<@${subMember.discordId}>)`);
-                } else {
-                    if (unverifiedMembers.length < 60) unverifiedMembers.push(`<@${member.id}>`);
-                }
-            }
-        });
-        await message.channel.send(`**UNVERIFIED MEMBERS**\n${unverifiedMembers.slice(parseInt(args[0]) ?? 0, 50).join('\n')}\n\n**SUB ACCOUNTS**\n${subMembers.join('\n')}`);
-        return true;
-    };
-
-    missingmembers = async (message: Message) => {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
-            return false;
-
-        const players = await sanity.GetValidMembers();
-
-        const missingRoles = [];
-
-        for (const player of players) {
-            const member = message.guild.members.cache.get(player.discordId);
-
-            if (member) {
-                if (!member.roles.cache.find(r => r.name === "Member")) {
-                    await sanity.VerifyUser(member);
-                    await new Promise(resolve => {
-                        setTimeout(resolve, 500);
-                    });
-                }
-            }
-        }
-
-        await message.channel.send("**ASSIGNED MEMBERS**\n<@" + missingRoles.join(">\n<@") + ">");
-
-        return true;
-    }
-
-    invalidmembers = async (message: Message) => {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
-            return false;
-        const players = await sanity.GetValidMembers();
-
-        const unverifiedMembers = [];
-        const subMembers = [];
-        message.guild.members.cache.forEach((member) => {
-            if (member.user.bot) return;
-            const player = players.find((p) => p.discordId === member.id);
-            if (!player) {
-                
-                const subMember = players.find((p) => p.moreDiscordUsers?.find(d => d.discordId == member.id) != undefined);
-                if (subMember) {
-                    subMembers.push(`<@${member.id}> (<@${subMember.discordId}>)`);
-                } else if (member.roles.cache.array().length > 1) {
-                    if (unverifiedMembers.length < 60) unverifiedMembers.push(`<@${member.id}>`);
-                }
-            }
-        });
-        message.channel.send("**INVALID MEMBERS**\n" + unverifiedMembers.join('\n'));
-        return true;
-    };
-
-    inactivemembers = async (message: Message) => {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
-            return false;
-        const members = await sanity.GetInactiveMembers();
-
-        const inactiveMembers = [];
-
-        for (const id of members) {
-            const member = await message.guild.members.fetch(id);
-            if (member?.roles.cache.find(r => r.name === "Member")) {
-                inactiveMembers.push(id);
-            }
-        }
-
-        message.channel.send(inactiveMembers.length + " LOST ACCESS");
-
-        if (inactiveMembers.length < 50) {
-            await message.channel.send(`**INACTIVE MEMBERS**\n<@${inactiveMembers.join(`>\n<@`)}>`);
-        } else {
-            for (let i = 0; i < (inactiveMembers.length % 50); i++) {
-                //await message.channel.send(`**INACTIVE MEMBERS**\n<@${inactiveMembers.slice(i*50, i*50+50).join(`>\n<@`)}>`);
-            }
-        }
-        return true;
-    }
-
     refreshconfig = async (message: Message) => {
         if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
             return false;
@@ -258,34 +121,6 @@ class ActionsCommands extends CommandObject {
         await guilds[message.guild.id]?.refreshConfig();
         return true;
     }
-
-    userswithgirlrole = async (message: Message) => {
-        if (!message.member.roles.cache.some(r => ['Moderator', 'Chat Moderator'].includes(r.name))) {
-            return false;
-        }
-
-        const members = message.guild.members.cache.filter(m => m.roles.cache.some(r => r.name == 'Girl'));
-
-        let msg = '**MEMBERS WITH GIRL ROLE**\n';
-
-        for (const [,m] of members) {
-            msg += `<@${m.id}> | ${(await sanity.GetMember(m.id))?.name}\n`;
-        }
-        
-        if (msg.length < 2000) {
-            await message.channel.send(msg);
-        } else {
-            const msgs = msg.split("\n");
-            await message.channel.send(msgs.slice(0, msgs.length/2).join("\n"));
-            await message.channel.send(msgs.slice(msgs.length/2, msgs.length).join("\n"));
-        }
-
-        return true;
-    }
-
-    // test = async (message: Message, args: string[]) => {
-    //     return true;
-    // };
 }
 
 const actionsCommands = new ActionsCommands();

@@ -249,31 +249,9 @@ class ApiFunctions {
     }
 
     async Search(searchString: string) {
-        const guild =
-            client.guilds.cache.get(config.discord.guildId) ||
-            client.guilds.cache.first();
-
-        const memberRole = guild.roles.cache.find(m => m.name === "Member");
-        console.log(memberRole?.name);
-        if (!memberRole) return {
-            status: false,
-            response: null,
-        }
-
-        searchString = searchString.toLowerCase();
-        
-        const members = guild.members.cache.filter((m) => m.roles.cache.get(memberRole.id) && (m?.id == searchString || m.nickname?.toLowerCase().includes(searchString) || m.displayName?.toLowerCase().includes(searchString) || `${m.user?.username}#${m.user?.discriminator}`?.toLowerCase().includes(searchString))).array();
-
-        if (members.length > 10 || members.length == 0) {
-            return {
-                status: false,
-                response: null,
-            }
-        }
-
         return {
             status: true,
-            response: JSON.stringify(members),
+            response: JSON.stringify([]),
         }
     }
     async GetDms() {

@@ -61,7 +61,7 @@ class Sanity extends SanityClient {
                             console.log(`ADDED ROLE ${role.name}`);
                         } else {
                             const channel = guild.channels.cache.find(
-                                (c) => c.name === 'admin' && c.type === 'text',
+                                (c) => c.name === 'admin' && c.type === 'GUILD_TEXT',
                             ) as TextChannel;
                             channel?.send(
                                 `<@${member.id}> did not get its Role for church: ${player.location}`
@@ -69,7 +69,7 @@ class Sanity extends SanityClient {
                         }
                     } else {
                         const channel = guild.channels.cache.find(
-                            (c) => c.name === 'admin' && c.type === 'text',
+                            (c) => c.name === 'admin' && c.type === 'GUILD_TEXT',
                         ) as TextChannel;
                         channel?.send(
                             `${member.displayName} does not have a church?`
@@ -92,11 +92,13 @@ class Sanity extends SanityClient {
                             .setTitle('Welcome to the BUK Gaming Discord!')
                             .setDescription(`Go to <#${config.discord.messages?.find((m) => m.key == 'information')?.parentId}> to get specific gameroles and read information about the Discord server.`)
                             .addField('BUK', 'This is an Offical BUK server, we expect our members to respect the official guidelines from BUK Central.');
-                        await member.send(welcomeEmbed).catch((err) => console.log(err));
+                        await member.send({
+                            embeds:[welcomeEmbed]
+                        }).catch((err) => console.log(err));
                         console.log('SENT WELCOME EMBED');
                     }
                     if (guild.id == "873855207849734175") {
-                        const channel = guild.channels.cache.find(i => i.type == "text" && i.id == "873917432660656138") as TextChannel | undefined;
+                        const channel = guild.channels.cache.find(i => i.type == "GUILD_TEXT" && i.id == "873917432660656138") as TextChannel | undefined;
 
                         await channel?.send(`Member <@${member.id}> joined. PMO name: ${player.name}`);
                     }
@@ -114,7 +116,7 @@ class Sanity extends SanityClient {
                 const voucher = member.guild.members.cache.get(player.discordId);
                 if (voucher?.id) {
                     await voucher.send('A member has joined the Discord on your behalf. Contact a Moderator if you do not know about this.');
-                    await (member.guild.channels.cache.find((c) => c.name == 'admin' && c.type == 'text') as TextChannel)?.send(`<@${member.id}> was accepted as a secondary account of <@${voucher.id}>`);
+                    await (member.guild.channels.cache.find((c) => c.name == 'admin' && c.type == 'GUILD_TEXT') as TextChannel)?.send(`<@${member.id}> was accepted as a secondary account of <@${voucher.id}>`);
                     // roles
                     const memberRole = guild.roles.cache.find(
                         (r) => r.name === 'Member',
@@ -137,7 +139,7 @@ class Sanity extends SanityClient {
                             await member.roles.add(role);
                         } else {
                             const channel = guild.channels.cache.find(
-                                (c) => c.name === 'admin' && c.type === 'text',
+                                (c) => c.name === 'admin' && c.type === 'GUILD_TEXT',
                             ) as TextChannel;
                             channel?.send(
                                 `<@${member.id}> did not get its Role for church: ${player.location}`
@@ -145,7 +147,7 @@ class Sanity extends SanityClient {
                         }
                     } else {
                         const channel = guild.channels.cache.find(
-                            (c) => c.name === 'admin' && c.type === 'text',
+                            (c) => c.name === 'admin' && c.type === 'GUILD_TEXT',
                         ) as TextChannel;
                         channel?.send(
                             `${member.displayName} does not have a church?`
@@ -215,33 +217,33 @@ class Sanity extends SanityClient {
         const orgs = (await sanity.fetch(query, params)) as Organization[];
 
         if (orgs.length === 0) return;
-        let organization: Organization = orgs[0];
-        if (orgs.length >= 2) {
-            const msg = await officer.send('What team?');
-            const acceptableReactions = ['🔵', '🔴'];
+        const organization: Organization = orgs[0];
+        // if (orgs.length >= 2) {
+        //     const msg = await officer.send('What team?');
+        //     const acceptableReactions = ['🔵', '🔴'];
 
-            const filter = (r: MessageReaction, u: GuildMember) => {
-                return (
-                    acceptableReactions.includes(r.emoji.name) &&
-                    u.id !== client.user.id
-                );
-            };
+        //     const filter = (r: MessageReaction, u: GuildMember) => {
+        //         return (
+        //             acceptableReactions.includes(r.emoji.name) &&
+        //             u.id !== client.user.id
+        //         );
+        //     };
 
-            for (const emoji of acceptableReactions) {
-                await msg.react(emoji);
-            }
-            const reactions = await msg.awaitReactions(filter, {
-                max: 1,
-                time: 10000,
-            });
-            console.log(reactions);
-            const reaction = reactions.first();
-            for (const i in orgs) {
-                if (reaction.emoji.name === acceptableReactions[i]) {
-                    organization = orgs[i];
-                }
-            }
-        }
+        //     for (const emoji of acceptableReactions) {
+        //         await msg.react(emoji);
+        //     }
+        //     const reactions = await msg.awaitReactions(filter, {
+        //         max: 1,
+        //         time: 10000,
+        //     });
+        //     console.log(reactions);
+        //     const reaction = reactions.first();
+        //     for (const i in orgs) {
+        //         if (reaction.emoji.name === acceptableReactions[i]) {
+        //             organization = orgs[i];
+        //         }
+        //     }
+        // }
         const player = (await sanity.fetch(
             `*[_type == 'player' && discordId == '${newMember.id}']`,
         )[0]) as Player;

@@ -1,23 +1,16 @@
-import { VoiceChannel, VoiceState, GuildMember } from 'discord.js';
+import { VoiceState, GuildMember, VoiceBasedChannel } from 'discord.js';
 import config from '../config';
-import fs from 'fs';
 import { channels, guilds, client } from '..';
 import channelNames from '../config/channelNames';
 import TemporaryChannel from '../classes/temporaryChannel';
 
-const rootFolder = './data/voice_activity';
-
-if (!fs.existsSync(rootFolder)) {
-    fs.mkdirSync(rootFolder);
-}
-
 async function deleteOverwrite(
-    channel: VoiceChannel,
+    channel: VoiceBasedChannel,
     member: GuildMember,
     ms: number,
 ) {
     await new Promise((resolve) => setTimeout(resolve, ms));
-    channel.permissionOverwrites.get(member.id)?.delete();
+    channel.permissionOverwrites.delete(member.id);
     return;
 }
 
@@ -52,54 +45,8 @@ function groupEnd(name: string) {
     }
 }
 
-type VoiceActivityStat = { id: string; total: number; started: number }
-
-const voiceStats: {
-    [id: string]: VoiceActivityStat
-} = {
-
-}
-
-function getTime(id: string): number {
-    if (fs.existsSync(`${rootFolder}/${id}`)) {
-        return parseInt(fs.readFileSync(`${rootFolder}/${id}`, {encoding: 'utf8'}));
-    }
-    return 0;
-}
-function setTime(id: string, time: number) {
-    fs.writeFileSync(`${rootFolder}/${id}`, time);
-}
-
-function updateTimeForUser(member: GuildMember) {
-    const now = Date.now();
-    if (member.voice.channel && member.voice.channel?.name !== 'AFK') {
-        let stats = voiceStats[member.id];
-        if (stats) {
-            stats.total = stats.total + (now - stats.started);
-        } else {
-            stats = {
-                id: member.id,
-                started: now,
-                total: 0,
-            }
-            stats.total = getTime(member.id);
-        }
-        voiceStats[member.id] = stats;
-        setTime(member.id, stats.total);
-    } else {
-        const stats = voiceStats[member.id];
-        if (stats) {
-            stats.total = stats.total + (now - stats.started);
-            voiceStats[member.id] = stats;
-            setTime(member.id, stats.total);
-        }
-        delete voiceStats[member.id];
-    }
-}
-
 export default async (oldState: VoiceState, newState: VoiceState): Promise<void> => {
     const member = newState.member;
-    updateTimeForUser(member);
     if (config.debug) return console.log('DEBUG: TRUE | VOICE IGNORED');
     const oldChannel = oldState.channel;
     const newChannel = newState.channel;
@@ -113,19 +60,18 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
 
         if (channels[oldChannel.id]?.creator.id !== member.id)
             channels[oldChannel.id]?.textChannel?.permissionOverwrites
-                .get(member.id)
-                ?.delete();
+                .delete(member.id);
 
         if (
             oldChannel.parent.name !== 'Permanent' &&
-            !oldChannel.members.array().length &&
+            !oldChannel.members.hasAny() &&
             !cc &&
             !lc
         ) {
             setTimeout(() => {
                 if (
                     oldChannel.guild.channels.cache.get(oldChannel.id)
-                        ? !oldChannel.members.array().length
+                        ? !oldChannel.members.hasAny()
                         : false
                 ) {
                     oldChannel
@@ -162,11 +108,11 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
                 groupName,
                 {
                     parent: category,
-                    type: 'voice',
+                    type: 'GUILD_VOICE',
                     bitrate,
                 }
             );
-            createdChannel.createOverwrite(member, {
+            createdChannel.permissionOverwrites.create(member, {
                 MOVE_MEMBERS: true,
                 MANAGE_CHANNELS: true,
                 CONNECT: true,
@@ -174,7 +120,7 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
             });
             if (member.voice.channel) {
                 await member.voice.setChannel(createdChannel);
-                await newChannel.createOverwrite(member, {
+                await newChannel.permissionOverwrites.create(member, {
                     CONNECT: false,
                 });
                 deleteOverwrite(newChannel, member, 10000);
@@ -187,7 +133,7 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
                 if (
                     !createdChannel.guild.channels.cache
                         .get(createdChannel.id)
-                        ?.members.array().length
+                        ?.members
                 ) {
                     createdChannel.guild.channels.cache
                         .get(createdChannel.id)
@@ -204,12 +150,12 @@ export default async (oldState: VoiceState, newState: VoiceState): Promise<void>
                 return;
             } else {
                 if (channels[newChannel.id]?.modes.closed) {
-                    newChannel.createOverwrite(member, {
+                    newChannel.permissionOverwrites.create(member, {
                         VIEW_CHANNEL: true,
                         CONNECT: true,
                     });
                 }
-                channels[newChannel.id]?.textChannel?.createOverwrite(member, {
+                channels[newChannel.id]?.textChannel?.permissionOverwrites.create(member, {
                     VIEW_CHANNEL: true,
                 });
             }

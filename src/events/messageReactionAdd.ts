@@ -72,7 +72,7 @@ const functions: Functions = {
             await member.send(`Role: **${role.name}** was assigned to you.\n*You should now have access to the dedicated ${role.name} channels.*`);
             if (reaction.emoji.name == '👧') {
                 const channel = guild.channels.cache.get('810867038015717426') as TextChannel;
-                if (channel.type == 'text') {
+                if (channel.type == 'GUILD_TEXT') {
                     await channel.send(`User: <@${member.id}> got the Girl role. PMO name: ${(await sanity.GetMember(member.id)).name}`)
                 }
             }

@@ -1,9 +1,9 @@
 import {
-    VoiceChannel,
     GuildMember,
     TextChannel,
     OverwriteResolvable,
     Role,
+    VoiceBasedChannel,
 } from 'discord.js';
 import { channels, client, guilds } from '..';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
@@ -14,7 +14,7 @@ const whitelist = ["551351643854209035", "559828650338418689"]
 /** A Temporary Voice Channel with advanced functions. */
 class TemporaryChannel {
     creator: GuildMember;
-    channel: VoiceChannel;
+    channel: VoiceBasedChannel;
     textChannel: TextChannel;
     guild: Guild;
     modes: {
@@ -24,7 +24,7 @@ class TemporaryChannel {
         muted: boolean;
         organization: boolean;
     };
-    constructor(channel: VoiceChannel, creator: GuildMember, cache?: boolean) {
+    constructor(channel: VoiceBasedChannel, creator: GuildMember, cache?: boolean) {
         this.creator = creator;
         this.channel = channel;
         this.guild = guilds[channel.guild.id];
@@ -48,7 +48,7 @@ class TemporaryChannel {
 
             await channel.lockPermissions();
 
-            await channel.createOverwrite(this.creator, {
+            await channel.permissionOverwrites.create(this.creator, {
                 MANAGE_CHANNELS: true,
                 MOVE_MEMBERS: true,
                 CONNECT: true,
@@ -59,7 +59,7 @@ class TemporaryChannel {
     async mute(member: GuildMember): Promise<void> {
         const channel = this.channel;
         if (!channel.permissionsFor(member)?.has('MANAGE_CHANNELS')) return;
-        await channel.createOverwrite(channel.guild.roles.everyone, {
+        await channel.permissionOverwrites.create(channel.guild.roles.everyone, {
             SPEAK: this.modes.muted ? null : false,
         });
 
@@ -68,7 +68,7 @@ class TemporaryChannel {
         const msg = await member.send(
             `Your channel is **${this.modes.muted ? 'MUTED' : 'UNMUTED'}**`
         );
-        await msg.delete({ timeout: 20000 });
+        setTimeout(() => msg.delete(), 20000);
     }
     async lock(member: GuildMember): Promise<void> {
         const channel = this.channel;
@@ -79,10 +79,10 @@ class TemporaryChannel {
         ) {
             await channel.lockPermissions();
 
-            channel.createOverwrite(channel.guild.roles.everyone, {
+            channel.permissionOverwrites.create(channel.guild.roles.everyone, {
                 CONNECT: false,
             });
-            channel.createOverwrite(this.creator, {
+            channel.permissionOverwrites.create(this.creator, {
                 MOVE_MEMBERS: true,
                 MANAGE_CHANNELS: true,
                 VIEW_CHANNEL: true,
@@ -95,7 +95,7 @@ class TemporaryChannel {
             const msg = await member.send(
                 'Your channel is now "fully" private.'
             );
-            msg.delete({ timeout: 20000 });
+            setTimeout(() => msg.delete(), 20000);
         }
     }
     async close(member: GuildMember): Promise<void> {
@@ -103,19 +103,19 @@ class TemporaryChannel {
         if (channel.permissionsFor(member)?.has('MANAGE_CHANNELS')) {
             this.modes.closed = !this.modes.closed;
             if (this.modes.closed) {
-                channel.createOverwrite(channel.guild.roles.everyone, {
+                channel.permissionOverwrites.create(channel.guild.roles.everyone, {
                     CONNECT: false,
                 });
                 channel.members.forEach((memb) => {
                     if (channel.permissionsFor(memb).has('MANAGE_CHANNELS')) {
-                        channel.createOverwrite(memb, {
+                        channel.permissionOverwrites.create(memb, {
                             VIEW_CHANNEL: true,
                             CONNECT: true,
                             MOVE_MEMBERS: true,
                             MANAGE_CHANNELS: true,
                         });
                     } else {
-                        channel.createOverwrite(memb, {
+                        channel.permissionOverwrites.create(memb, {
                             VIEW_CHANNEL: true,
                             CONNECT: true,
                         });
@@ -133,7 +133,7 @@ class TemporaryChannel {
         const channel = this.channel;
         if (channel.permissionsFor(member)?.has('MANAGE_CHANNELS')) {
             this.modes.hidden = true;
-            await channel.createOverwrite(channel.guild.roles.everyone, {
+            await channel.permissionOverwrites.create(channel.guild.roles.everyone, {
                 VIEW_CHANNEL: false,
             });
             if (channel.parent.name !== 'Voice') {
@@ -141,7 +141,7 @@ class TemporaryChannel {
                     (r) => r.name === channel.parent.name
                 );
                 if (!role) return;
-                await channel.createOverwrite(role, {
+                await channel.permissionOverwrites.create(role, {
                     VIEW_CHANNEL: false,
                 });
             }
@@ -186,11 +186,11 @@ class TemporaryChannel {
                 channel.name,
                 {
                     parent: channel.parent,
-                    type: 'text',
+                    type: 'GUILD_TEXT',
                     permissionOverwrites,
                 }
             );
-            this.textChannel = textChannel;
+            this.textChannel = textChannel as TextChannel;
             member.send(
                 'A temporary text channel has been created. It will be deleted when your channel is emptied.'
             );
@@ -213,7 +213,7 @@ class TemporaryChannel {
 
         const channel = this.channel;
 
-        for (const [, overwrite] of channel.permissionOverwrites) {
+        for (const [, overwrite] of channel.permissionOverwrites.cache) {
             if (whitelist.includes(overwrite.id)) {
                 nationRoles.push(member.guild.roles.cache.get(overwrite.id));
             }
@@ -242,7 +242,7 @@ class TemporaryChannel {
                 })
             })
 
-            await channel.overwritePermissions(overwrites);
+            await channel.permissionOverwrites.set(overwrites);
 
             await member.send(
                 'Only members of your country can join your channel.'
@@ -265,7 +265,7 @@ class TemporaryChannel {
         
         const channel = this.channel;
 
-        for (const [, overwrite] of channel.permissionOverwrites) {
+        for (const [, overwrite] of channel.permissionOverwrites.cache) {
             if (whitelist.includes(overwrite.id)) {
                 organizationRoles.push(member.guild.roles.cache.get(overwrite.id));
             }
@@ -294,7 +294,7 @@ class TemporaryChannel {
                 })
             })
 
-            await channel.overwritePermissions(overwrites);
+            await channel.permissionOverwrites.set(overwrites);
 
             await member.send(
                 'Only members of your organizations can join the channel.'
@@ -304,7 +304,7 @@ class TemporaryChannel {
 
     async getFromCache(creator: GuildMember): Promise<void> {
         if (existsSync(`./data/tempTextChannels/${this.channel.id}`)) {
-            const textchannel = readFileSync(`./data/tempTextChannels/${this.channel.id}`, 'string');
+            const textchannel = readFileSync(`./data/tempTextChannels/${this.channel.id}`, {encoding: 'utf-8'});
             if (textchannel) {
                 this.textChannel = client.channels.cache.get(
                     textchannel
@@ -332,7 +332,7 @@ class TemporaryChannel {
                         allow: ['VIEW_CHANNEL'],
                     });
                 });
-                this.textChannel.overwritePermissions(permissionOverwrites);
+                this.textChannel.permissionOverwrites.set(permissionOverwrites);
             }
         }
     }

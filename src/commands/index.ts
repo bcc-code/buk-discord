@@ -1,10 +1,8 @@
 import voice from './voice';
-import text from './text';
 import actions from './actions';
 import embeds from './embeds';
 import organization from './organization';
 import guild from './guild';
-import tournament from './tournament';
 import CommandObject from '../classes/command';
 import sanity from './sanity';
 import { Message } from 'discord.js';
@@ -17,22 +15,14 @@ class Commands {
             }
         }
     }
-    getcommands(message: Message) {
-        if (!message.member.roles.cache.find((r) => r.name === 'Administrator'))
-            return false;
-        message.channel.send(Object.keys(this));
-        return true;
-    }
 }
 
 const commands = new Commands([
     voice,
     actions,
     embeds,
-    text,
     organization,
     guild,
-    tournament,
     sanity,
 ]);
 

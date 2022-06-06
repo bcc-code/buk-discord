@@ -27,7 +27,7 @@ class VoiceCommands extends CommandObject {
             const msg = await message.channel.send(
                 `Available subcommands: ${cmds.join(', ')}`
             );
-            msg.delete({ timeout: 5000 });
+            setTimeout(() => msg.delete(), 5000);
             return true;
         }
         createdChannel?.[cmd]?.(message.member);
@@ -41,7 +41,7 @@ class VoiceCommands extends CommandObject {
             const msg = await message.channel.send(
                 'You are not in a voice channel.'
             );
-            msg.delete({ timeout: 5000 });
+            setTimeout(() => msg.delete(), 5000);
             return false;
         }
 
@@ -76,7 +76,9 @@ class VoiceCommands extends CommandObject {
             embed.addField(`#${top.indexOf(m) + 1}`, `<@${m.id}>\n_${secondsToHms(Math.floor(m.time/1000))}_`, true);
         }
 
-        await message.channel.send(embed);
+        await message.channel.send({
+            embeds: [embed]
+        });
 
         return true;
     }
@@ -105,7 +107,7 @@ class VoiceCommands extends CommandObject {
             const msg = await message.channel.send(
                 'You are not in a voice channel.'
             );
-            msg.delete({ timeout: 5000 });
+            setTimeout(() => msg.delete(), 5000);
             return false;
         }
 
@@ -116,21 +118,21 @@ class VoiceCommands extends CommandObject {
             const msg = await message.channel.send(
                 `Usage: ${config.discord.prefix}add [@player]`
             );
-            msg.delete({ timeout: 5000 });
+            setTimeout(() => msg.delete(), 5000);
             return false;
         }
         if (chan.permissionsFor(message.member).has('MANAGE_CHANNELS')) {
-            chan.createOverwrite(player, {
+            chan.permissionOverwrites.create(player, {
                 VIEW_CHANNEL: true,
                 CONNECT: true,
             });
             const msg = await message.channel.send('Player added.');
-            msg.delete({ timeout: 5000 });
+            setTimeout(() => msg.delete(), 5000);
         } else {
             const msg = await message.channel.send(
                 'You do not have access to edit this channel.'
             );
-            msg.delete({ timeout: 10000 });
+            setTimeout(() => msg.delete(), 10000);
         }
         return true;
     };

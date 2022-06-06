@@ -3,5 +3,4 @@ node_modules/
 dist/
 tmp/
 data/
-package-lock.json
 .env
